@@ -25,6 +25,30 @@ An intelligent multi-agent system for monitoring and analyzing EPON (Ethernet Pa
 - **DSP Adaptation**: Signal processing health
 - **ONU Status**: Operational state and alarms
 
+## 🏆 Competition Submission: Key Concepts Applied
+
+This project demonstrates mastery of **5 key concepts** from the course (exceeding the required 3):
+
+### 1. Multi-agent System (LLM-powered & Sequential)
+- **Implementation**: A robust pipeline where a **Root Agent** orchestrates specialized sub-agents (`Parsing`, `Compliance`, `Reflection`, `Data Analysis`).
+- **Architecture**: Agents execute sequentially to process raw telemetry, validate it, and verify results, leveraging **Google Gemini** for reasoning at each step.
+
+### 2. Tools (Custom & Code Execution)
+- **Code Execution**: The `Data Analysis Agent` utilizes a secure Python execution environment (`exec()`) to generate dynamic Matplotlib visualizations on the fly.
+- **Custom Tools**: Specialized tools for NETCONF log parsing and IEEE 802.3 compliance validation.
+
+### 3. Observability (Logging & Tracing)
+- **Implementation**: A custom `LoggingAgentTool` wraps agent execution to capture and log all events, thoughts, and actions.
+- **Benefit**: Provides full visibility into the agent's reasoning process ("Chain of Thought") which is displayed in the web UI trace.
+
+### 4. Sessions & State Management
+- **Implementation**: Uses `InMemorySessionService` to maintain user context across interactions.
+- **State**: The system intelligently caches telemetry data per session to optimize performance and reduce redundant API calls.
+
+### 5. Agent Evaluation (Reflection)
+- **Implementation**: A dedicated **Reflection Agent** acts as a Quality Assurance layer.
+- **Function**: It reviews the output of the Compliance Agent to detect hallucinations, logical inconsistencies, or severity mismatches before presenting the final answer to the user.
+
 ## 🎬 Demo
 
 ### Network Monitoring Interface
