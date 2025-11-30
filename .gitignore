@@ -111,7 +111,7 @@ cache/
 *.log
 logs/
 
-# Generated images/charts (excluding static assets)
+# Generated images/charts (excluding static assets and demo images)
 *.png
 *.jpg
 *.jpeg
@@ -121,6 +121,7 @@ logs/
 !static/**/*.jpg
 !static/**/*.jpeg
 !static/**/*.gif
+!assets/**/*
 
 # UUID-named generated files
 *-*-*-*-*.png
