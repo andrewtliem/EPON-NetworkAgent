@@ -2,6 +2,8 @@
 
 An intelligent multi-agent system for monitoring and analyzing EPON (Ethernet Passive Optical Network) telemetry data using Google's Agent Development Kit (ADK). This system provides real-time network health monitoring, compliance checking, and intelligent analysis through a modern web interface.
 
+[![Live Demo](https://img.shields.io/badge/Live_Demo-network.atlverse.cloud-blue?style=for-the-badge&logo=google-chrome)](https://network.atlverse.cloud/)
+
 ## 🚀 Features
 
 ### Multi-Agent Architecture
@@ -50,6 +52,8 @@ This project demonstrates mastery of **5 key concepts** from the course (exceedi
 - **Function**: It reviews the output of the Compliance Agent to detect hallucinations, logical inconsistencies, or severity mismatches before presenting the final answer to the user.
 
 ## 🎬 Demo
+
+**Try it live: [https://network.atlverse.cloud/](https://network.atlverse.cloud/)**
 
 ### Network Monitoring Interface
 The web interface provides real-time network health monitoring with an intuitive chat-based interaction model:
