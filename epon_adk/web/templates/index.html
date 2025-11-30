@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EPON Agent Interface</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <div>
+                <h1>EPON Network Agent</h1>
+                <div class="session-id-display">
+                    <span class="session-label">Session:</span>
+                    <code class="session-id" id="session-id">Loading...</code>
+                </div>
+            </div>
+            <div class="status-indicator">
+                <span class="dot"></span> Online
+            </div>
+        </header>
+
+        <div class="main-content">
+            <div class="chat-section">
+                <div class="chat-container" id="chat-container">
+                    <div class="message system">
+                        <div class="content">
+                            Hello! I am the EPON Network Agent. I can monitor network health, detect anomalies, and
+                            provide status reports. How can I help you today?
+                        </div>
+                    </div>
+                </div>
+
+                <div class="input-area">
+                    <input type="text" id="user-input" placeholder="Type your instruction here..." autocomplete="off">
+                    <button id="send-btn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="log-sidebar">
+                <h3>Simulation Controls</h3>
+                <div class="simulation-controls"
+                    style="padding: 10px; border-bottom: 1px solid var(--border-color); display: flex; gap: 8px; flex-wrap: wrap;">
+                    <button onclick="injectScenario('degrade_onu')"
+                        style="background: #eab308; color: #000; padding: 6px 10px; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem; flex: 1;">Degrade
+                        Signal</button>
+                    <button onclick="injectScenario('ddos_attack')"
+                        style="background: #ef4444; color: #fff; padding: 6px 10px; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem; flex: 1;">Simulate
+                        DDoS</button>
+                    <button onclick="injectScenario('clear_issues')"
+                        style="background: #22c55e; color: #fff; padding: 6px 10px; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem; flex: 1;">Reset
+                        Network</button>
+                </div>
+
+                <h3>Current Task</h3>
+                <div class="current-task-container" id="current-task-container">
+                    <div class="task-status idle">
+                        <div class="status-icon">⏸️</div>
+                        <div class="status-text">Idle</div>
+                    </div>
+                </div>
+
+                <h3>Agent Trace</h3>
+                <div class="log-container" id="log-container">
+                    <div class="log-entry">
+                        <div class="log-content" style="color: #94a3b8;">System<br>Ready to trace agent execution...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const chatContainer = document.getElementById('chat-container');
+        const logContainer = document.getElementById('log-container');
+        const userInput = document.getElementById('user-input');
+        const sendBtn = document.getElementById('send-btn');
+
+        function addMessage(text, sender) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', sender);
+
+            const contentDiv = document.createElement('div');
+            contentDiv.classList.add('content');
+
+            // Simple markdown-like parsing
+            let formattedText = text;
+
+            // Handle images: ![alt](url)
+            formattedText = formattedText.replace(/!\[([^\]]*)\]\(([^\)]+)\)/g, '<br><img src="$2" alt="$1" style="max-width: 100%; border-radius: 8px; margin-top: 10px;">');
+
+            // Handle bold: **text**
+            formattedText = formattedText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+            // Handle newlines
+            formattedText = formattedText.replace(/\n/g, '<br>');
+
+            contentDiv.innerHTML = formattedText;
+
+            messageDiv.appendChild(contentDiv);
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function addMessageWithTime(text, sender, timeSeconds) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', sender);
+
+            const contentDiv = document.createElement('div');
+            contentDiv.classList.add('content');
+
+            // Same markdown parsing as addMessage
+            let formattedText = text;
+            formattedText = formattedText.replace(/!\[([^\]]*)\]\(([^\)]+)\)/g, '<img src="$2" alt="$1" style="max-width: 100%; border-radius: 8px; margin-top: 8px;">');
+            formattedText = formattedText.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+            formattedText = formattedText.replace(/\n/g, '<br>');
+
+            contentDiv.innerHTML = formattedText;
+
+            // Add time badge
+            const timeBadge = document.createElement('div');
+            timeBadge.className = 'response-time-badge';
+            timeBadge.innerHTML = `<span>⏱️ ${timeSeconds}s</span>`;
+            contentDiv.appendChild(timeBadge);
+
+            messageDiv.appendChild(contentDiv);
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        let activeAgents = []; // Track all agents in current request
+
+        function updateCurrentTask(log) {
+            const agentName = log.author || 'System';
+            const actionType = log.type;
+
+            let icon = '⚙️';
+            let actionText = '';
+
+            // Determine icon and text based on agent and action
+            if (actionType === 'tool_call') {
+                icon = '🔧';
+                actionText = `${log.content.substring(0, 40)}...`;
+            } else if (actionType === 'tool_result') {
+                icon = '✅';
+                actionText = 'Tool completed';
+            } else {
+                icon = '💭';
+                actionText = 'Thinking...';
+            }
+
+            // Agent-specific icons (override if not tool call)
+            if (actionType !== 'tool_call') {
+                if (agentName.includes('root')) {
+                    icon = '🎯';
+                } else if (agentName.includes('parsing')) {
+                    icon = '📊';
+                } else if (agentName.includes('compliance')) {
+                    icon = '✓';
+                } else if (agentName.includes('reflection')) {
+                    icon = '🔍';
+                } else if (agentName.includes('data_analysis')) {
+                    icon = '📈';
+                }
+            }
+
+            // Add to active agents list if not already present
+            const existingIndex = activeAgents.findIndex(a => a.name === agentName);
+            if (existingIndex === -1) {
+                activeAgents.push({
+                    name: agentName,
+                    icon: icon,
+                    action: actionText,
+                    active: true
+                });
+            } else {
+                // Update existing agent
+                activeAgents[existingIndex].action = actionText;
+                activeAgents[existingIndex].icon = icon;
+                activeAgents[existingIndex].active = true;
+            }
+
+            // Mark all others as inactive
+            activeAgents.forEach(a => {
+                if (a.name !== agentName) {
+                    a.active = false;
+                }
+            });
+
+            // Render the agent list
+            const taskContainer = document.getElementById('current-task-container');
+            const agentItems = activeAgents.map(agent => `
+                <div class="agent-item ${agent.active ? 'active' : 'completed'}">
+                    <div class="agent-icon">${agent.icon}</div>
+                    <div class="agent-info">
+                        <div class="agent-name">${agent.name}</div>
+                        ${agent.active ? `<div class="agent-action">${agent.action}</div>` : ''}
+                    </div>
+                    ${agent.active ? '<div class="agent-pulse"></div>' : '<div class="agent-check">✓</div>'}
+                </div>
+            `).join('');
+
+            taskContainer.innerHTML = `<div class="agent-list">${agentItems}</div>`;
+        }
+
+        function resetCurrentTask() {
+            activeAgents = []; // Clear the list
+            const taskContainer = document.getElementById('current-task-container');
+            taskContainer.innerHTML = `
+                <div class="task-status idle">
+                    <div class="status-icon">⏸️</div>
+                    <div class="status-text">Idle</div>
+                </div>
+            `;
+        }
+
+        function addLogEntry(log) {
+            // Update current task tracker
+            updateCurrentTask(log);
+
+            const container = document.getElementById('log-container');
+            const entryDiv = document.createElement('div');
+            entryDiv.className = `log-entry ${log.type}`;
+
+            const metaDiv = document.createElement('div');
+            metaDiv.className = 'log-meta';
+            metaDiv.innerHTML = `
+                <span class="log-author">${log.author}</span>
+                <span class="log-type">${log.type.replace('_', ' ')}</span>
+            `;
+
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'log-content';
+            contentDiv.textContent = log.content;
+
+            entryDiv.appendChild(metaDiv);
+            entryDiv.appendChild(contentDiv);
+            container.appendChild(entryDiv);
+
+            // Auto scroll to bottom
+            container.scrollTop = container.scrollHeight;
+        }
+
+        async function injectScenario(scenario) {
+            try {
+                const response = await fetch('/inject', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ scenario: scenario })
+                });
+
+                const data = await response.json();
+                if (data.status === 'success') {
+                    // Add a system log entry to show the action
+                    addLogEntry({
+                        author: 'System',
+                        type: 'text',
+                        content: `Scenario injected: ${scenario}`
+                    });
+                } else {
+                    alert('Failed to inject scenario: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error injecting scenario');
+            }
+        }
+
+        let loadingTimer = null;
+        let loadingStartTime = null;
+
+        async function sendMessage() {
+            const text = userInput.value.trim();
+            if (!text) return;
+
+            addMessage(text, 'user');
+            userInput.value = '';
+            userInput.disabled = true;
+
+            // Reset and initialize task tracker
+            activeAgents = [];
+            const taskContainer = document.getElementById('current-task-container');
+            taskContainer.innerHTML = `
+                <div class="agent-list">
+                    <div class="agent-item active">
+                        <div class="agent-icon">🔄</div>
+                        <div class="agent-info">
+                            <div class="agent-name">Starting...</div>
+                            <div class="agent-action">Initializing request</div>
+                        </div>
+                        <div class="agent-pulse"></div>
+                    </div>
+                </div>
+            `;
+
+            // Add loading indicator with timer
+            const loadingDiv = document.createElement('div');
+            loadingDiv.classList.add('message', 'system', 'loading');
+            loadingDiv.innerHTML = `
+                <div class="content loading-content">
+                    <div class="spinner"></div>
+                    <div class="loading-text">
+                        Processing<span class="loading-dots"></span>
+                        <span class="loading-timer">0s</span>
+                    </div>
+                </div>
+            `;
+            chatContainer.appendChild(loadingDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+
+            // Start timer
+            loadingStartTime = Date.now();
+            const timerElement = loadingDiv.querySelector('.loading-timer');
+            loadingTimer = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - loadingStartTime) / 1000);
+                timerElement.textContent = `${elapsed}s`;
+            }, 100); // Update every 100ms for smooth counting
+
+            // Clear previous logs for new request? Or keep history?
+            // Let's keep history but add a separator
+            const sep = document.createElement('div');
+            sep.classList.add('log-separator');
+            logContainer.appendChild(sep);
+
+            try {
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ message: text })
+                });
+
+                const data = await response.json();
+
+                // Calculate total response time
+                const totalTime = Math.floor((Date.now() - loadingStartTime) / 1000);
+
+                // Remove loading indicator and clear timer
+                if (loadingTimer) {
+                    clearInterval(loadingTimer);
+                    loadingTimer = null;
+                }
+                chatContainer.removeChild(loadingDiv);
+
+                if (data.error) {
+                    addMessage(`Error: ${data.error}`, 'system error');
+                } else {
+                    // Add the response with time badge
+                    addMessageWithTime(data.response, 'system', totalTime);
+
+                    // Update session ID display
+                    if (data.session_id) {
+                        const sessionIdElement = document.getElementById('session-id');
+                        sessionIdElement.textContent = data.session_id;
+                    }
+
+                    // Render logs
+                    if (data.logs && data.logs.length > 0) {
+                        data.logs.forEach(log => addLogEntry(log));
+                    }
+                }
+            } catch (error) {
+                if (loadingTimer) {
+                    clearInterval(loadingTimer);
+                    loadingTimer = null;
+                }
+                chatContainer.removeChild(loadingDiv);
+                addMessage(`Network Error: ${error.message}`, 'system error');
+            } finally {
+                userInput.disabled = false;
+                userInput.focus();
+            }
+        }
+
+        sendBtn.addEventListener('click', sendMessage);
+        userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,188 @@
+# ========================================
+# Python
+# ========================================
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+.pytest_cache/
+
+# Virtual environments
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# ========================================
+# IDEs and Editors
+# ========================================
+# VS Code
+.vscode/
+*.code-workspace
+
+# PyCharm
+.idea/
+*.iml
+*.iws
+.idea_modules/
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# ========================================
+# Environment Variables
+# ========================================
+.env
+.env.local
+.env.*.local
+*.env
+
+# ========================================
+# Operating System
+# ========================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+
+# ========================================
+# Project Specific
+# ========================================
+# Cache directories
+epon_adk/cache/
+cache/
+*.cache
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Log files
+*.log
+logs/
+
+# Generated images/charts (excluding static assets)
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.webp
+!static/**/*.png
+!static/**/*.jpg
+!static/**/*.jpeg
+!static/**/*.gif
+
+# UUID-named generated files
+*-*-*-*-*.png
+*-*-*-*-*.jpg
+*-*-*-*-*.json
+
+# Debug and verification scripts
+debug_*.py
+verify_*.py
+test_*.py
+!epon_adk/tests/test_*.py
+
+# Temporary files
+*.tmp
+*.temp
+tmp/
+temp/
+
+# ========================================
+# Documentation (internal)
+# ========================================
+# AI assistant artifacts and internal development notes
+.gemini/
+
+# ========================================
+# Flask
+# ========================================
+instance/
+.webassets-cache
+
+# ========================================
+# Jupyter Notebook
+# ========================================
+.ipynb_checkpoints
+
+# ========================================
+# Data files
+# ========================================
+# Uncomment if you want to ignore data files
+# *.csv
+# *.json
+# *.xml
+
+# ========================================
+# Backup files
+# ========================================
+*.bak
+*.swp
+*.swo
+*~
+
+# ========================================
+# CI/CD
+# ========================================
+.github/
+.gitlab-ci.yml
+.travis.yml
+
+# ========================================
+# Other
+# ========================================
+# Node modules (if any frontend tools are added)
+node_modules/
+npm-debug.log
+yarn-error.log
