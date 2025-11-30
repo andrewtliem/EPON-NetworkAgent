@@ -145,6 +145,7 @@ temp/
 # ========================================
 # AI assistant artifacts and internal development notes
 .gemini/
+GITHUB_SUBMISSION.md
 
 # ========================================
 # Flask
